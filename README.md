@@ -1,5 +1,7 @@
 # micro-todo 🪼
 
+## [Available here!](https://nrholm1.github.io/micro-todo/)
+
 A minimal, keyboard-centric todo list manager with a small memory footprint. 
 
 All tasks are stored locally (no server required), and it’s designed to be navigated and edited primarily via the keyboard.
