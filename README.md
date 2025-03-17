@@ -1,6 +1,6 @@
 # micro-todo 🪼
 
-## [Available here!](https://nrholm1.github.io/micro-todo/)
+### [Available here!](https://nrholm1.github.io/micro-todo/)
 
 A minimal, keyboard-centric todo list manager with a small memory footprint. 
 
