@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo: LFG ⚡️</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Todo: LFG ⚡️</h1>
+  <button id="toggle-completed-btn" onclick="toggleShowCompleted()">Hide Completed</button>
+  <table id="todo-table">
+    <thead>
+      <tr>
+        <th></th> <!-- Drag handle column -->
+        <th>ID</th>
+        <th>Description</th>
+        <th>Deadline</th>
+        <th style="width:100px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Task rows (and nested subtasks) will be dynamically inserted here -->
+    </tbody>
+  </table>
+  <script src="script.js"></script>
+</body>
+<script>
+  // Simple MathJax config to treat $...$ as inline math
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</html>
