@@ -1,4 +1,4 @@
-# micro-todo 🪼
+# 🪼 micro-todo
 
 ### [Available here!](https://nrholm1.github.io/micro-todo/)
 
