@@ -143,6 +143,45 @@ function switchPage(pageName) {
   highlightCurrentPageInSidebar();
 }
 
+/**
+ * New: Rename page.
+ * Prompts the user for a new name, and if valid, updates the page list and localStorage.
+ */
+function renamePage(oldPageName, newPageName) {
+  if (!newPageName) {
+    alert("Page name cannot be empty.");
+    return;
+  }
+  let pages = loadPageList();
+  if (pages.includes(newPageName)) {
+    alert("A page with that name already exists.");
+    return;
+  }
+  const index = pages.indexOf(oldPageName);
+  if (index === -1) return;
+  pages[index] = newPageName;
+  savePageList(pages);
+  
+  // Transfer tasks from old key to new key.
+  const tasksData = localStorage.getItem(getPageKey(oldPageName));
+  localStorage.setItem(getPageKey(newPageName), tasksData || JSON.stringify([]));
+  localStorage.removeItem(getPageKey(oldPageName));
+  
+  // Update currentPage if needed.
+  if (currentPage === oldPageName) {
+    currentPage = newPageName;
+  }
+  renderSidebar();
+  const currentNameEl = document.getElementById('current-page-name');
+  if (currentNameEl) {
+    currentNameEl.textContent = currentPage;
+  }
+  if (currentPage === newPageName) {
+    loadTasksForCurrentPage();
+    renderTasks();
+  }
+}
+
 /*************************************************************
  * getVisibleTasks Function
  *************************************************************/
@@ -430,61 +469,70 @@ function renderTasks() {
  * Sidebar Rendering and Page Navigation
  *************************************************************/
 function renderSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-    const pages = loadPageList();
-    sidebar.innerHTML = '';
-    pages.forEach(pageName => {
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'sidebar-item';
-        pageDiv.textContent = pageName;
-        // Set a data attribute to hold the page name
-        pageDiv.setAttribute('data-page', pageName);
-        pageDiv.onclick = () => {
-        switchPage(pageName);
-        document.getElementById('current-page-name').textContent = currentPage;
-        };
-
-        // If not the current page, add a trash icon
-        if (pageName !== currentPage) {
-        const trashIcon = document.createElement('span');
-        trashIcon.className = 'trash-icon';
-        trashIcon.textContent = '✖︎';
-        trashIcon.style.cursor = 'pointer';
-        trashIcon.onclick = (e) => {
-            e.stopPropagation();
-            if (confirm("Delete page " + pageName + "?")) {
-            removePage(pageName);
-            }
-        };
-        pageDiv.appendChild(trashIcon);
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+  const pages = loadPageList();
+  sidebar.innerHTML = '';
+  pages.forEach(pageName => {
+    const pageDiv = document.createElement('div');
+    pageDiv.className = 'sidebar-item';
+    pageDiv.textContent = pageName;
+    pageDiv.setAttribute('data-page', pageName);
+    pageDiv.onclick = () => {
+      switchPage(pageName);
+      const currentNameEl = document.getElementById('current-page-name');
+      if (currentNameEl) {
+        currentNameEl.textContent = currentPage;
+      }
+    };
+    // Allow renaming via double-click.
+    pageDiv.ondblclick = () => {
+      const newName = prompt("Enter new name for page:", pageName);
+      if (newName && newName !== pageName) {
+        renamePage(pageName, newName);
+      }
+    };
+    
+    if (pageName !== currentPage) {
+      const trashIcon = document.createElement('span');
+      trashIcon.className = 'trash-icon';
+      trashIcon.textContent = '✖︎';
+      trashIcon.style.cursor = 'pointer';
+      trashIcon.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm("Delete page " + pageName + "?")) {
+          removePage(pageName);
         }
-        
-        sidebar.appendChild(pageDiv);
-    });
-    highlightCurrentPageInSidebar();
+      };
+      pageDiv.appendChild(trashIcon);
+    }
+    
+    sidebar.appendChild(pageDiv);
+  });
+  highlightCurrentPageInSidebar();
 }
 
-
 function highlightCurrentPageInSidebar() {
-    const sidebarItems = document.querySelectorAll('.sidebar-item');
-    sidebarItems.forEach(item => {
-      const page = item.getAttribute('data-page');
-      if (page === currentPage) {
-        item.classList.add('active');
-      } else {
-        item.classList.remove('active');
-      }
-    });
-  }
-  
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(item => {
+    const page = item.getAttribute('data-page');
+    if (page === currentPage) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
 
 function createNewPage() {
   const pageName = prompt("Enter new page name:");
   if (pageName) {
     addPage(pageName);
     switchPage(pageName);
-    document.getElementById('current-page-name').textContent = currentPage;
+    const currentNameEl = document.getElementById('current-page-name');
+    if (currentNameEl) {
+      currentNameEl.textContent = currentPage;
+    }
   }
 }
 
