@@ -1,0 +1,292 @@
+/* Reset and Global Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #000;
+}
+
+/* Fixed Header */
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff; /* white background for seamless look */
+  /* border-bottom: 1px solid #ccc; */
+  padding: 10px 20px;
+  z-index: 1000;
+}
+
+#header h1 {
+  font-size: 24px;
+  text-align: left;
+}
+
+/* Container for Sidebar and Main Content */
+#container {
+  display: flex;
+  margin-top: 60px; /* equals header height */
+  height: calc(100vh - 60px);
+}
+
+/* Fixed Sidebar */
+#sidebar {
+  position: fixed;
+  top: 60px; /* immediately below header */
+  bottom: 0;
+  left: 0;
+  width: 200px;
+  padding: 10px;
+  border-right: 1px solid #ccc;
+  background: #fff;
+  overflow-y: auto;
+}
+
+/* Sidebar Page Buttons (old style) */
+.sidebar-item {
+  position: relative;
+  padding: 2px;
+  padding-right: 30px;  /* room for delete icon */
+  margin: 5px 0;
+  cursor: pointer;
+  background: #fff;
+  /* border: 1px solid #ddd; */
+  /* border-radius: 4px; */
+}
+
+.sidebar-item.active {
+  background-color: #ddf;
+  font-weight: bold;
+}
+
+/* Delete Icon (using '✖︎') */
+.trash-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Main Content Area */
+#main-content {
+  margin-left: 220px; /* sidebar width (200px) + extra spacing (20px) */
+  padding: 20px;
+  width: calc(100% - 220px);
+  overflow-y: auto;
+  text-align: center;
+}
+
+/* Old Todos Table Styles */
+table {
+  table-layout: fixed;
+  width: 100%;
+  max-width: 800px; /* as before */
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+table, th, td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;  /* compact rows */
+  font-size: 1em;
+  line-height: 1.2;
+  text-align: left;
+}
+
+th {
+  padding: 4px 8px;
+}
+
+td {
+  text-align: left;
+}
+
+/* Fixed Column Widths (old settings) */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 30px;
+}
+th:nth-child(2),
+td:nth-child(2) {
+  width: 40px;
+}
+th:nth-child(3),
+td:nth-child(3) {
+  width: 450px;
+}
+th:nth-child(4),
+td:nth-child(4) {
+  width: 70px;
+}
+th:nth-child(5),
+td:nth-child(5) {
+  width: 80px;
+}
+
+/* Actions Cell – Old Rethought Design */
+td.actions-cell {
+  display: flex;
+  position: relative;
+  min-width: 40px;
+  white-space: nowrap;
+}
+
+/* Dropdown Menu Styles */
+td.actions-cell .action-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  display: none;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  margin-top: 2px;
+  z-index: 10;
+  gap: 4px;
+}
+
+td.actions-cell.show-menu .action-menu {
+  display: inline-flex;
+}
+
+/* Dropdown Toggle Button */
+.action-toggle {
+  background: none;
+  border: none;
+  font-size: 1em;
+  color: #555;
+  cursor: pointer;
+}
+
+/* Dropdown Menu Items */
+td.actions-cell .action-menu button {
+  background: none;
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  color: #555;
+  padding: 4px;
+  margin: 0;
+}
+
+td.actions-cell .action-menu button:hover {
+  background: #eee;
+}
+
+/* Edit Mode Input Fields */
+table input.edit-input {
+  width: 90%;
+  max-width: 100%;
+  padding: 2px 4px;
+  font-size: 1em;
+  height: auto;
+}
+
+/* Completed Task Styling */
+.completed {
+  text-decoration: line-through;
+  color: gray;
+}
+
+/* Highlight Active Row */
+tr.highlight {
+  border: 3px solid blue !important;
+}
+
+/* Form Styles (unchanged from old stylesheet) */
+form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-bottom: 20px;
+}
+
+input[type="text"] {
+  padding: 8px;
+  font-size: 1em;
+  margin: 5px;
+  width: 300px;
+}
+
+input[type="date"] {
+  padding: 8px;
+  font-size: 1em;
+  margin: 5px;
+  width: 150px;
+}
+
+button {
+  padding: 8px 12px;
+  font-size: 1em;
+  margin: 0;
+  cursor: pointer;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  color: #555;
+  margin: 0 2px;
+}
+
+/* Drag Handle & Collapse Button */
+.drag-handle {
+  text-align: center;
+  font-size: 1em;
+}
+
+.collapse-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 2px;
+  font-size: 0.8em;
+  padding: 0;
+}
+
+/* Draggable Row */
+.draggable-row {
+  cursor: move;
+}
+
+/* MathJax Fix */
+mjx-container {
+  vertical-align: middle;
+}
+
+@media (max-width: 1000px) {
+  /* Hide the sidebar */
+  #sidebar {
+    display: none;
+  }
+  
+  /* Make the main content occupy full width */
+  #main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  /* Center the header text */
+  #header h1 {
+    text-align: center;
+  }
+  
+  /* Optional: adjust container layout if needed */
+  #container {
+    flex-direction: column;
+  }
+}

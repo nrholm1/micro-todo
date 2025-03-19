@@ -4,32 +4,53 @@
   <link rel="icon" href="https://symbl-world.akamaized.net/i/webp/86/c22af4235a7629f196acef66ae9803.webp" type="image/x-icon">
   <meta charset="UTF-8">
   <title>micro-todo</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$']] }
+    };
+  </script>
 </head>
 <body>
-  <h1>🪼 micro-todo</h1>
-  <button id="toggle-completed-btn" onclick="toggleShowCompleted()">Hide Completed</button>
-  <table id="todo-table">
-    <thead>
-      <tr>
-        <th></th> <!-- Drag handle column -->
-        <th>ID</th>
-        <th>Description</th>
-        <th>Deadline</th>
-        <th style="width:100px;">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Task rows (and nested subtasks) will be dynamically inserted here -->
-    </tbody>
-  </table>
-  <script src="script.js"></script>
+  <!-- Fixed header -->
+  <header id="header">
+    <h1>🪼 micro-todo</h1>
+  </header>
+  
+  <!-- Main container holds the sidebar and main content -->
+  <div id="container">
+    <!-- Fixed sidebar -->
+    <aside id="sidebar">
+      <!-- Sidebar items (pages) will be rendered here -->
+    </aside>
+    
+    <!-- Main content area -->
+    <main id="main-content">
+      <h2><span id="current-page-name">default</span></h2>
+      
+      <!-- You can uncomment these buttons if needed -->
+      <!-- <button onclick="createNewPage()">Create New Page</button>
+      <button id="toggle-completed-btn" onclick="toggleShowCompleted()">Hide Completed</button> -->
+      
+      <table id="todo-table">
+        <thead>
+          <tr>
+            <th></th> <!-- Drag handle column -->
+            <th>ID</th>
+            <th>Description</th>
+            <th>Deadline</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Task rows (and nested subtasks) will be dynamically inserted here -->
+        </tbody>
+      </table>
+    </main>
+  </div>
+  
+  <script src="js/utils.js"></script>
+  <script src="js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </body>
-<script>
-  // Simple MathJax config to treat $...$ as inline math
-  window.MathJax = {
-    tex: { inlineMath: [['$', '$']] }
-  };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </html>
