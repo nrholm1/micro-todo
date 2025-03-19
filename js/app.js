@@ -81,6 +81,7 @@ function importTodos() {
       renderSidebar();
     }
     currentPage = pageName;
+    updateURL();
   }
   const input = document.createElement('input');
   input.type = 'file';
@@ -136,18 +137,15 @@ function removePage(pageName) {
   renderSidebar();
 }
 
-function switchPage(pageName) {
-  currentPage = pageName;
-  loadTasksForCurrentPage();
-  renderTasks();
-  highlightCurrentPageInSidebar();
-}
-
 /**
- * New: Rename page.
- * Prompts the user for a new name, and if valid, updates the page list and localStorage.
+ * Rename a page.
+ * Note: Cannot rename the default page.
  */
 function renamePage(oldPageName, newPageName) {
+  if (oldPageName === 'default') {
+    alert("Cannot rename the default page.");
+    return;
+  }
   if (!newPageName) {
     alert("Page name cannot be empty.");
     return;
@@ -167,7 +165,6 @@ function renamePage(oldPageName, newPageName) {
   localStorage.setItem(getPageKey(newPageName), tasksData || JSON.stringify([]));
   localStorage.removeItem(getPageKey(oldPageName));
   
-  // Update currentPage if needed.
   if (currentPage === oldPageName) {
     currentPage = newPageName;
   }
@@ -179,6 +176,28 @@ function renamePage(oldPageName, newPageName) {
   if (currentPage === newPageName) {
     loadTasksForCurrentPage();
     renderTasks();
+    updateURL();
+  }
+}
+
+function switchPage(pageName) {
+  currentPage = pageName;
+  loadTasksForCurrentPage();
+  renderTasks();
+  highlightCurrentPageInSidebar();
+  updateURL();
+}
+
+/**
+ * Update the browser URL based on currentPage.
+ * If the current page is not "default", the URL becomes {baseurl}/{currentPage}.
+ */
+function updateURL() {
+  const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '');
+  if (currentPage !== 'default') {
+    history.replaceState(null, '', baseUrl + '/' + encodeURIComponent(currentPage));
+  } else {
+    history.replaceState(null, '', baseUrl);
   }
 }
 
@@ -189,7 +208,6 @@ function getVisibleTasks() {
   const visible = [];
   (function recurse(list, isTopLevel) {
     for (const task of list) {
-      // If a top-level task is completed and showCompleted is false, skip it.
       if (isTopLevel && task.completed && !showCompleted) {
         continue;
       }
@@ -328,7 +346,6 @@ function renderTaskRow(task, tbody, parentId = '') {
 
   tr.style.backgroundColor = getRowColor(task.id);
 
-  // Leftmost cell: collapse/expand if subtasks exist
   const tdLeft = document.createElement('td');
   tdLeft.className = 'drag-handle';
   if (task.subtasks && task.subtasks.length > 0) {
@@ -343,7 +360,6 @@ function renderTaskRow(task, tbody, parentId = '') {
   }
   tr.appendChild(tdLeft);
 
-  // ID Column
   const tdId = document.createElement('td');
   tdId.textContent = task.id;
   tr.appendChild(tdId);
@@ -485,18 +501,20 @@ function renderSidebar() {
         currentNameEl.textContent = currentPage;
       }
     };
-    // Allow renaming via double-click.
-    pageDiv.ondblclick = () => {
-      const newName = prompt("Enter new name for page:", pageName);
-      if (newName && newName !== pageName) {
-        renamePage(pageName, newName);
-      }
-    };
+    // Allow renaming via double-click if not default.
+    if (pageName !== 'default') {
+      pageDiv.ondblclick = () => {
+        const newName = prompt("Enter new name for page:", pageName);
+        if (newName && newName !== pageName) {
+          renamePage(pageName, newName);
+        }
+      };
+    }
     
     if (pageName !== currentPage) {
       const trashIcon = document.createElement('span');
       trashIcon.className = 'trash-icon';
-      trashIcon.textContent = '✖︎';
+      trashIcon.textContent = '🗑';
       trashIcon.style.cursor = 'pointer';
       trashIcon.onclick = (e) => {
         e.stopPropagation();
@@ -526,13 +544,15 @@ function highlightCurrentPageInSidebar() {
 
 function createNewPage() {
   const pageName = prompt("Enter new page name:");
-  if (pageName) {
+  if (pageName && pageName !== 'default') {
     addPage(pageName);
     switchPage(pageName);
     const currentNameEl = document.getElementById('current-page-name');
     if (currentNameEl) {
       currentNameEl.textContent = currentPage;
     }
+  } else if (pageName === 'default') {
+    alert("Cannot create a page named default.");
   }
 }
 
@@ -608,13 +628,12 @@ function handleKeydown(e) {
     importTodos();
     return;
   }
-  
-  // Handle Cmd+P for new page
-  if (e.metaKey && e.key.toLowerCase() === 'p') {
-    e.preventDefault();
-    createNewPage();
-    return;
-  }
+    // Handle Cmd+P for new page
+    if (e.metaKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        createNewPage();
+        return;
+    }
   
   // Handle undo (Cmd+Z)
   if (e.metaKey && e.key.toLowerCase() === 'z') {
