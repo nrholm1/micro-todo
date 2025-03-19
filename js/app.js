@@ -304,6 +304,12 @@ function switchPage(pageName) {
   renderTasks();
   highlightCurrentPageInSidebar();
   updateURL();
+  if (pageName === 'default') {
+    const currentNameEl = document.getElementById('current-page-name');
+    if (currentNameEl) {
+        currentNameEl.textContent = pageName;
+    }
+  }
 }
 
 
@@ -780,19 +786,19 @@ function handleKeydown(e) {
     return;
   }
   
-    // Use cmd+ArrowDown to switch to the next page.
-    if (e.metaKey && e.key === 'ArrowDown') {
-        e.preventDefault();
-        switchToNextPage();
-        return;
-        }
-        
-    // Use cmd+ArrowUp to switch to the previous page.
-    if (e.metaKey && e.key === 'ArrowUp') {
+// Use cmd+ArrowDown to switch to the next page.
+if (e.metaKey && e.key === 'ArrowDown') {
     e.preventDefault();
-    switchToPrevPage();
+    switchToNextPage();
     return;
     }
+    
+// Use cmd+ArrowUp to switch to the previous page.
+if (e.metaKey && e.key === 'ArrowUp') {
+e.preventDefault();
+switchToPrevPage();
+return;
+}
 
   switch (e.key) {
     case 'ArrowUp':
