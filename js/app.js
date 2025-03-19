@@ -439,6 +439,18 @@ function toggleCollapse(id) {
  *************************************************************/
 function renderTaskRow(task, tbody, parentId = '') {
   const tr = document.createElement('tr');
+  // When a row is clicked, update activeIndex and highlight it.
+    tr.addEventListener('click', function (e) {
+        // Avoid interfering with button clicks (collapse, dropdown, etc.)
+        if (e.target.tagName.toLowerCase() === 'button') return;
+        const visible = getVisibleTasks();
+        const index = visible.findIndex(t => t.id === task.id);
+        if (index >= 0) {
+        activeIndex = index + 1; // Use 1-based indexing as before.
+        updateFocus();
+        }
+    });
+  
   tr.draggable = true;
   tr.classList.add('draggable-row');
   tr.setAttribute('data-id', task.id);
@@ -885,14 +897,18 @@ function deleteCurrentRow() {
 }
 
 function updateFocus() {
-  document.querySelectorAll('tr.highlight').forEach(tr => tr.classList.remove('highlight'));
-  const visible = getVisibleTasks();
-  const idx = activeIndex - 1;
-  if (idx >= 0 && idx < visible.length) {
-    const row = document.querySelector(`tr[data-id="${visible[idx].id}"]`);
-    if (row) row.classList.add('highlight');
+    document.querySelectorAll('tr.highlight').forEach(tr => tr.classList.remove('highlight'));
+    const visible = getVisibleTasks();
+    const idx = activeIndex - 1;
+    if (idx >= 0 && idx < visible.length) {
+      const row = document.querySelector(`tr[data-id="${visible[idx].id}"]`);
+      if (row) {
+        row.classList.add('highlight');
+        // Ensure the focused row is scrolled into view smoothly.
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
   }
-}
 
 /*************************************************************
  * Toggle Show Completed & Initialization
