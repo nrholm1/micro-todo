@@ -53,6 +53,36 @@ function saveTasksForCurrentPage() {
 }
 
 /*************************************************************
+ * Hash-based URL Routing Functions
+ *************************************************************/
+function updateURL() {
+  // For hash routing, we simply update window.location.hash.
+  if (currentPage !== 'default') {
+    window.location.hash = encodeURIComponent(currentPage);
+  } else {
+    window.location.hash = '';
+  }
+}
+
+function initializeRouting() {
+  // Get the hash (without the leading '#')
+  let hash = window.location.hash;
+  if (hash) {
+    hash = decodeURIComponent(hash.substring(1));
+    let pages = loadPageList();
+    // If the page from the URL exists, use it.
+    if (pages.includes(hash)) {
+      currentPage = hash;
+    } else {
+      currentPage = 'default';
+    }
+  } else {
+    currentPage = 'default';
+  }
+  updateURL();
+}
+
+/*************************************************************
  * Export / Import Todos (Cmd+O for export / Cmd+I for import)
  *************************************************************/
 function exportTodos() {
@@ -126,24 +156,23 @@ function addPage(pageName) {
 }
 
 function removePage(pageName) {
-    if (pageName === 'default') {
-      alert("You cannot delete the default page.");
-      return;
-    }
-    let pages = loadPageList();
-    pages = pages.filter(p => p !== pageName);
-    savePageList(pages);
-    localStorage.removeItem(getPageKey(pageName));
-    
-    // If the deleted page was the current page, switch to default.
-    if (pageName === currentPage) {
-      currentPage = 'default';
-      loadTasksForCurrentPage();
-      renderTasks();
-      updateURL();
-    }
-    renderSidebar();
+  if (pageName === 'default') {
+    alert("You cannot delete the default page.");
+    return;
   }
+  let pages = loadPageList();
+  pages = pages.filter(p => p !== pageName);
+  savePageList(pages);
+  localStorage.removeItem(getPageKey(pageName));
+  // If the deleted page was the current page, switch to default.
+  if (pageName === currentPage) {
+    currentPage = 'default';
+    loadTasksForCurrentPage();
+    renderTasks();
+    updateURL();
+  }
+  renderSidebar();
+}
 
 /**
  * Rename a page.
@@ -194,19 +223,6 @@ function switchPage(pageName) {
   renderTasks();
   highlightCurrentPageInSidebar();
   updateURL();
-}
-
-/**
- * Update the browser URL based on currentPage.
- * If the current page is not "default", the URL becomes {baseurl}/{currentPage}.
- */
-function updateURL() {
-  const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '');
-  if (currentPage !== 'default') {
-    history.replaceState(null, '', baseUrl + '/' + encodeURIComponent(currentPage));
-  } else {
-    history.replaceState(null, '', baseUrl);
-  }
 }
 
 /*************************************************************
@@ -493,52 +509,51 @@ function renderTasks() {
  * Sidebar Rendering and Page Navigation
  *************************************************************/
 function renderSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-    const pages = loadPageList();
-    sidebar.innerHTML = '';
-    pages.forEach(pageName => {
-      const pageDiv = document.createElement('div');
-      pageDiv.className = 'sidebar-item';
-      pageDiv.textContent = pageName;
-      pageDiv.setAttribute('data-page', pageName);
-      pageDiv.onclick = () => {
-        switchPage(pageName);
-        const currentNameEl = document.getElementById('current-page-name');
-        if (currentNameEl) {
-          currentNameEl.textContent = currentPage;
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+  const pages = loadPageList();
+  sidebar.innerHTML = '';
+  pages.forEach(pageName => {
+    const pageDiv = document.createElement('div');
+    pageDiv.className = 'sidebar-item';
+    pageDiv.textContent = pageName;
+    pageDiv.setAttribute('data-page', pageName);
+    pageDiv.onclick = () => {
+      switchPage(pageName);
+      const currentNameEl = document.getElementById('current-page-name');
+      if (currentNameEl) {
+        currentNameEl.textContent = currentPage;
+      }
+    };
+    // Allow renaming via double-click if not default.
+    if (pageName !== 'default') {
+      pageDiv.ondblclick = () => {
+        const newName = prompt("Enter new name for page:", pageName);
+        if (newName && newName !== pageName) {
+          renamePage(pageName, newName);
         }
       };
-      // Allow renaming via double-click if not default.
-      if (pageName !== 'default') {
-        pageDiv.ondblclick = () => {
-          const newName = prompt("Enter new name for page:", pageName);
-          if (newName && newName !== pageName) {
-            renamePage(pageName, newName);
-          }
-        };
-      }
-      
-      // Always add delete icon for non-default pages.
-      if (pageName !== 'default') {
-        const deleteIcon = document.createElement('span');
-        deleteIcon.className = 'trash-icon';
-        deleteIcon.textContent = '✖︎';  // using the new icon
-        deleteIcon.style.cursor = 'pointer';
-        deleteIcon.onclick = (e) => {
-          e.stopPropagation();
-          if (confirm("Delete page " + pageName + "?")) {
-            removePage(pageName);
-          }
-        };
-        pageDiv.appendChild(deleteIcon);
-      }
-      
-      sidebar.appendChild(pageDiv);
-    });
-    highlightCurrentPageInSidebar();
-  }
-  
+    }
+    
+    // Always add delete icon for non-default pages.
+    if (pageName !== 'default') {
+      const deleteIcon = document.createElement('span');
+      deleteIcon.className = 'trash-icon';
+      deleteIcon.textContent = '✖︎';
+      deleteIcon.style.cursor = 'pointer';
+      deleteIcon.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm("Delete page " + pageName + "?")) {
+          removePage(pageName);
+        }
+      };
+      pageDiv.appendChild(deleteIcon);
+    }
+    
+    sidebar.appendChild(pageDiv);
+  });
+  highlightCurrentPageInSidebar();
+}
 
 function highlightCurrentPageInSidebar() {
   const sidebarItems = document.querySelectorAll('.sidebar-item');
@@ -638,12 +653,13 @@ function handleKeydown(e) {
     importTodos();
     return;
   }
-    // Handle Cmd+P for new page
-    if (e.metaKey && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        createNewPage();
-        return;
-    }
+  
+  // Handle Cmd+P for import
+  if (e.metaKey && e.key.toLowerCase() === 'p') {
+    e.preventDefault();
+    createNewPage();
+    return;
+  }
   
   // Handle undo (Cmd+Z)
   if (e.metaKey && e.key.toLowerCase() === 'z') {
@@ -809,7 +825,10 @@ function toggleShowCompleted() {
   renderTasks();
 }
 
-// Initialize the app with page-specific data
+/*************************************************************
+ * Initialization
+ *************************************************************/
+initializeRouting();
 loadTasksForCurrentPage();
 renderTasks();
 renderSidebar();
