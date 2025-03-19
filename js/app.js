@@ -897,18 +897,18 @@ function deleteCurrentRow() {
 }
 
 function updateFocus() {
-    document.querySelectorAll('tr.highlight').forEach(tr => tr.classList.remove('highlight'));
-    const visible = getVisibleTasks();
-    const idx = activeIndex - 1;
-    if (idx >= 0 && idx < visible.length) {
-      const row = document.querySelector(`tr[data-id="${visible[idx].id}"]`);
-      if (row) {
-        row.classList.add('highlight');
-        // Ensure the focused row is scrolled into view smoothly.
-        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
+  document.querySelectorAll('tr.highlight').forEach(tr => tr.classList.remove('highlight'));
+  const visible = getVisibleTasks();
+  const idx = activeIndex - 1;
+  if (idx >= 0 && idx < visible.length) {
+    const row = document.querySelector(`tr[data-id="${visible[idx].id}"]`);
+    if (row) {
+      row.classList.add('highlight');
+      // Ensure the focused row is scrolled into view smoothly.
+      row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
+}
 
 /*************************************************************
  * Toggle Show Completed & Initialization
