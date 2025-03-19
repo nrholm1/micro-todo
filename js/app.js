@@ -56,31 +56,37 @@ function saveTasksForCurrentPage() {
  * Hash-based URL Routing Functions
  *************************************************************/
 function updateURL() {
-  // For hash routing, we simply update window.location.hash.
-  if (currentPage !== 'default') {
-    window.location.hash = encodeURIComponent(currentPage);
-  } else {
-    window.location.hash = '';
+    if (currentPage !== 'default') {
+      window.location.hash = encodeURIComponent(currentPage);
+      document.title = 'micro-todo - ' + currentPage;
+      const currentNameEl = document.getElementById('current-page-name');
+      if (currentNameEl) {
+        currentNameEl.textContent = currentPage;
+      }
+    } else {
+      window.location.hash = '';
+      document.title = 'micro-todo';
+    }
   }
-}
+
 
 function initializeRouting() {
-  // Get the hash (without the leading '#')
-  let hash = window.location.hash;
-  if (hash) {
-    hash = decodeURIComponent(hash.substring(1));
-    let pages = loadPageList();
-    // If the page from the URL exists, use it.
-    if (pages.includes(hash)) {
-      currentPage = hash;
+    // Get the hash (without the leading '#')
+    let hash = window.location.hash;
+    if (hash) {
+      hash = decodeURIComponent(hash.substring(1));
+      let pages = loadPageList();
+      // If the page from the URL exists, use it.
+      if (pages.includes(hash)) {
+        currentPage = hash;
+      } else {
+        currentPage = 'default';
+      }
     } else {
       currentPage = 'default';
     }
-  } else {
-    currentPage = 'default';
+    updateURL();
   }
-  updateURL();
-}
 
 /*************************************************************
  * Export / Import Todos (Cmd+O for export / Cmd+I for import)
