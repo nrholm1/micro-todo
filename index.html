@@ -12,31 +12,41 @@
   </script>
 </head>
 <body>
-  <h1 style="text-align: left;">🪼 micro-todo</h1>
-  <div id="sidebar">
-    <!-- Sidebar items (pages) will be rendered here -->
-  </div>
+  <!-- Fixed header -->
+  <header id="header">
+    <h1>🪼 micro-todo</h1>
+  </header>
   
-  <div id="main-content" style="margin-left:0px; padding:0px; text-align: center;">
-    <h2><span id="current-page-name">default</span></h1>
-  
-    <!-- <button onclick="createNewPage()">Create New Page</button>
-    <button id="toggle-completed-btn" onclick="toggleShowCompleted()">Hide Completed</button> -->
+  <!-- Main container holds the sidebar and main content -->
+  <div id="container">
+    <!-- Fixed sidebar -->
+    <aside id="sidebar">
+      <!-- Sidebar items (pages) will be rendered here -->
+    </aside>
     
-    <table id="todo-table">
-      <thead>
-        <tr>
-          <th></th> <!-- Drag handle column -->
-          <th>ID</th>
-          <th>Description</th>
-          <th>Deadline</th>
-          <th style="width:73px;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Task rows (and nested subtasks) will be dynamically inserted here -->
-      </tbody>
-    </table>
+    <!-- Main content area -->
+    <main id="main-content">
+      <h2><span id="current-page-name">default</span></h2>
+      
+      <!-- You can uncomment these buttons if needed -->
+      <!-- <button onclick="createNewPage()">Create New Page</button>
+      <button id="toggle-completed-btn" onclick="toggleShowCompleted()">Hide Completed</button> -->
+      
+      <table id="todo-table">
+        <thead>
+          <tr>
+            <th></th> <!-- Drag handle column -->
+            <th>ID</th>
+            <th>Description</th>
+            <th>Deadline</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Task rows (and nested subtasks) will be dynamically inserted here -->
+        </tbody>
+      </table>
+    </main>
   </div>
   
   <script src="js/utils.js"></script>
