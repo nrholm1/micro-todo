@@ -1,5 +1,3 @@
-// app.js
-
 /*************************************************************
  * Global Variables
  *************************************************************/
@@ -8,12 +6,33 @@ let editingTaskId = null;
 let activeIndex = 1;
 let showCompleted = true;
 let lastTasksSnapshot = null;
+let currentPage = 'default';
 
 /*************************************************************
- * Local Storage Functions
+ * Page Management Helpers
  *************************************************************/
-function loadTasks() {
-  const storedTasks = localStorage.getItem('todos');
+function getPageKey(pageName) {
+  return 'todos_' + pageName;
+}
+
+function getPageListKey() {
+  return 'todo_pages';
+}
+
+function loadPageList() {
+  const pagesJson = localStorage.getItem(getPageListKey());
+  return pagesJson ? JSON.parse(pagesJson) : ['default'];
+}
+
+function savePageList(pages) {
+  localStorage.setItem(getPageListKey(), JSON.stringify(pages));
+}
+
+/*************************************************************
+ * Local Storage Functions (Page-Specific)
+ *************************************************************/
+function loadTasksForCurrentPage() {
+  const storedTasks = localStorage.getItem(getPageKey(currentPage));
   tasks = storedTasks ? JSON.parse(storedTasks) : [];
   // Ensure each task has a collapsed property.
   function ensureCollapsedProp(taskArray) {
@@ -29,20 +48,20 @@ function loadTasks() {
   ensureCollapsedProp(tasks);
 }
 
-function saveTasks() {
-  localStorage.setItem('todos', JSON.stringify(tasks));
+function saveTasksForCurrentPage() {
+  localStorage.setItem(getPageKey(currentPage), JSON.stringify(tasks));
 }
 
 /*************************************************************
- * Export / Import Todos (Cmd+S / Cmd+L)
+ * Export / Import Todos (Cmd+O for export / Cmd+I for import)
  *************************************************************/
 function exportTodos() {
-  const todosJSON = localStorage.getItem('todos');
+  const todosJSON = localStorage.getItem(getPageKey(currentPage));
   const blob = new Blob([todosJSON], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'todos.json';
+  a.download = currentPage + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -50,6 +69,19 @@ function exportTodos() {
 }
 
 function importTodos() {
+  // Ask user which page to import into (default to current page if left blank)
+  let pageName = prompt("Enter page name to import into (leave empty for current page):", currentPage);
+  if (pageName && pageName !== currentPage) {
+    let pages = loadPageList();
+    if (!pages.includes(pageName)) {
+      pages.push(pageName);
+      savePageList(pages);
+      // Initialize with empty todos if needed.
+      localStorage.setItem(getPageKey(pageName), JSON.stringify([]));
+      renderSidebar();
+    }
+    currentPage = pageName;
+  }
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'application/json';
@@ -60,10 +92,9 @@ function importTodos() {
     const reader = new FileReader();
     reader.onload = function (e) {
       try {
-        const json = e.target.result;
-        const importedTasks = JSON.parse(json);
+        const importedTasks = JSON.parse(e.target.result);
         tasks = importedTasks;
-        saveTasks();
+        saveTasksForCurrentPage();
         renderTasks();
         alert('Todos imported successfully!');
       } catch (error) {
@@ -78,7 +109,42 @@ function importTodos() {
 }
 
 /*************************************************************
- * getVisibleTasks Function (restored)
+ * Page Management Functions
+ *************************************************************/
+function addPage(pageName) {
+  let pages = loadPageList();
+  if (pages.includes(pageName)) {
+    alert("Page already exists.");
+    return;
+  }
+  pages.push(pageName);
+  savePageList(pages);
+  // Create an empty todos list for this page.
+  localStorage.setItem(getPageKey(pageName), JSON.stringify([]));
+  renderSidebar();
+}
+
+function removePage(pageName) {
+  if (pageName === currentPage) {
+    alert("You cannot delete the page you’re currently viewing.");
+    return;
+  }
+  let pages = loadPageList();
+  pages = pages.filter(p => p !== pageName);
+  savePageList(pages);
+  localStorage.removeItem(getPageKey(pageName));
+  renderSidebar();
+}
+
+function switchPage(pageName) {
+  currentPage = pageName;
+  loadTasksForCurrentPage();
+  renderTasks();
+  highlightCurrentPageInSidebar();
+}
+
+/*************************************************************
+ * getVisibleTasks Function
  *************************************************************/
 function getVisibleTasks() {
   const visible = [];
@@ -98,7 +164,7 @@ function getVisibleTasks() {
 }
 
 /*************************************************************
- * Task Management: Adding, Editing, Deleting
+ * Task Management Functions
  *************************************************************/
 function addMainTask() {
   const newId = getNextMainId();
@@ -112,7 +178,7 @@ function addMainTask() {
   };
   tasks.push(newTask);
   editingTaskId = newId;
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
   const visible = getVisibleTasks();
   const newIndex = visible.findIndex(t => t.id === newId);
@@ -140,7 +206,7 @@ function addSubtask(parentId, description, deadline) {
   };
   parentTask.subtasks.push(newSubtask);
   editingTaskId = newSubId;
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
   return newSubId;
 }
@@ -159,7 +225,7 @@ function saveTaskEdit(id) {
     t.deadline = deadlineInput.value ? new Date(deadlineInput.value).toISOString() : '';
   }
   editingTaskId = null;
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
   updateFocus();
 }
@@ -173,7 +239,7 @@ function cancelEdit() {
 function deleteTask(id) {
   lastTasksSnapshot = JSON.parse(JSON.stringify(tasks));
   tasks = deleteTaskById(id, tasks);
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
   updateFocus();
 }
@@ -185,14 +251,14 @@ function undoDelete() {
   }
   tasks = lastTasksSnapshot;
   lastTasksSnapshot = null;
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
   updateFocus();
 }
 
 function toggleComplete(id) {
   toggleCompleteTask(id, tasks);
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
   updateFocus();
 }
@@ -201,7 +267,7 @@ function toggleCollapse(id) {
   const t = findTaskById(id, tasks);
   if (!t) return;
   t.collapsed = !t.collapsed;
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
   updateFocus();
 }
@@ -230,7 +296,7 @@ function renderTaskRow(task, tbody, parentId = '') {
     const collapseButton = document.createElement('button');
     collapseButton.className = 'collapse-button';
     collapseButton.textContent = task.collapsed ? '►' : '▼';
-    collapseButton.onclick = function (e) {
+    collapseButton.onclick = function(e) {
       e.stopPropagation();
       toggleCollapse(task.id);
     };
@@ -243,7 +309,6 @@ function renderTaskRow(task, tbody, parentId = '') {
   tdId.textContent = task.id;
   tr.appendChild(tdId);
 
-  // Check if this row is in edit mode
   if (task.id === editingTaskId) {
     const tdDesc = document.createElement('td');
     tdDesc.innerHTML = `<input type="text" id="edit-desc-${task.id}" class="edit-input" value="${task.description}">`;
@@ -266,7 +331,6 @@ function renderTaskRow(task, tbody, parentId = '') {
       if (descField) descField.focus();
     }, 0);
   } else {
-    // Normal (view) mode
     const tdDesc = document.createElement('td');
     tdDesc.innerHTML = parseInlineFormatting(task.description);
     if (task.completed) {
@@ -282,18 +346,16 @@ function renderTaskRow(task, tbody, parentId = '') {
     tdActions.className = 'actions-cell';
     tdActions.style.position = 'relative';
 
-    // Toggle Complete Button
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'action-button';
     toggleBtn.title = 'Toggle Complete';
     toggleBtn.textContent = task.completed ? '✓' : '☐';
-    toggleBtn.onclick = function (e) {
+    toggleBtn.onclick = function(e) {
       e.stopPropagation();
       toggleComplete(task.id);
     };
     tdActions.appendChild(toggleBtn);
 
-    // More Actions Dropdown
     const dropdownContainer = document.createElement('div');
     dropdownContainer.className = 'dropdown';
 
@@ -301,7 +363,7 @@ function renderTaskRow(task, tbody, parentId = '') {
     dropdownToggle.className = 'action-button dropdown-toggle';
     dropdownToggle.title = 'More Actions';
     dropdownToggle.textContent = '⋮';
-    dropdownToggle.onclick = function (e) {
+    dropdownToggle.onclick = function(e) {
       e.stopPropagation();
       if (dropdownMenu.style.display === 'flex') {
         dropdownMenu.style.display = 'none';
@@ -331,14 +393,13 @@ function renderTaskRow(task, tbody, parentId = '') {
     tdActions.appendChild(dropdownContainer);
     tr.appendChild(tdActions);
 
-    document.addEventListener('click', function () {
+    document.addEventListener('click', function() {
       dropdownMenu.style.display = 'none';
     });
   }
 
   tbody.appendChild(tr);
 
-  // Render any subtasks (if not collapsed)
   if (task.subtasks && task.subtasks.length > 0 && !task.collapsed) {
     task.subtasks.forEach(subtask => {
       renderTaskRow(subtask, tbody, task.id);
@@ -362,6 +423,61 @@ function renderTasks() {
     MathJax.typesetPromise()
       .then(() => console.log('MathJax re-typeset done.'))
       .catch(err => console.error('MathJax error:', err));
+  }
+}
+
+/*************************************************************
+ * Sidebar Rendering and Page Navigation
+ *************************************************************/
+function renderSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+  const pages = loadPageList();
+  sidebar.innerHTML = '';
+  pages.forEach(pageName => {
+    const pageDiv = document.createElement('div');
+    pageDiv.className = 'sidebar-item';
+    pageDiv.textContent = pageName;
+    pageDiv.onclick = () => {
+      switchPage(pageName);
+      document.getElementById('current-page-name').textContent = currentPage;
+    };
+    
+    if (pageName !== currentPage) {
+      const trashIcon = document.createElement('span');
+      trashIcon.textContent = ' 🗑';
+      trashIcon.style.cursor = 'pointer';
+      trashIcon.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm("Delete page " + pageName + "?")) {
+          removePage(pageName);
+        }
+      };
+      pageDiv.appendChild(trashIcon);
+    }
+    
+    sidebar.appendChild(pageDiv);
+  });
+  highlightCurrentPageInSidebar();
+}
+
+function highlightCurrentPageInSidebar() {
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(item => {
+    if (item.textContent.indexOf(currentPage) !== -1) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+function createNewPage() {
+  const pageName = prompt("Enter new page name:");
+  if (pageName) {
+    addPage(pageName);
+    switchPage(pageName);
+    document.getElementById('current-page-name').textContent = currentPage;
   }
 }
 
@@ -390,7 +506,7 @@ function handleDrop(event) {
     return;
   }
   reorderTasks(dragData.draggedId, targetId, dragData.draggedParent);
-  saveTasks();
+  saveTasksForCurrentPage();
   renderTasks();
 }
 
@@ -413,7 +529,6 @@ function reorderTasks(draggedId, targetId, parentId) {
 
 document.addEventListener('keydown', handleKeydown);
 function handleKeydown(e) {
-  // If in edit mode, only handle Enter or Escape.
   if (editingTaskId !== null) {
     if (e.key === 'Enter') {
       saveTaskEdit(editingTaskId);
@@ -424,29 +539,28 @@ function handleKeydown(e) {
     }
     return;
   }
-
+  
   // Handle Cmd+O for export
   if (e.metaKey && e.key.toLowerCase() === 'o') {
     e.preventDefault();
     exportTodos();
     return;
   }
-
+  
   // Handle Cmd+I for import
   if (e.metaKey && e.key.toLowerCase() === 'i') {
     e.preventDefault();
     importTodos();
     return;
   }
-
+  
   // Handle undo (Cmd+Z)
   if (e.metaKey && e.key.toLowerCase() === 'z') {
     e.preventDefault();
     undoDelete();
     return;
   }
-
-  // Navigation & action keys
+  
   switch (e.key) {
     case 'ArrowUp':
       moveActiveUp();
@@ -593,7 +707,7 @@ function updateFocus() {
 }
 
 /*************************************************************
- * Toggle Show Completed & Initialize
+ * Toggle Show Completed & Initialization
  *************************************************************/
 function toggleShowCompleted() {
   showCompleted = !showCompleted;
@@ -604,6 +718,7 @@ function toggleShowCompleted() {
   renderTasks();
 }
 
-// Initialize the app
-loadTasks();
+// Initialize the app with page-specific data
+loadTasksForCurrentPage();
 renderTasks();
+renderSidebar();

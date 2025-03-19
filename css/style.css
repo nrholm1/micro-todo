@@ -198,3 +198,20 @@ tr.highlight {
 #todo-input.active-input {
   outline: 3px solid blue;
 }
+
+/* Minimal styles for the sidebar */
+#sidebar {
+  float: left;
+  width: 200px;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+}
+.sidebar-item {
+  padding: 5px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+.sidebar-item.active {
+  background-color: #ddf;
+  font-weight: bold;
+}
