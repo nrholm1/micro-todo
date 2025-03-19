@@ -207,10 +207,22 @@ tr.highlight {
   padding: 10px;
 }
 .sidebar-item {
-  padding: 5px;
+  position: relative;
+  padding: 2px;
+  padding-right: 30px;  /* Leave room for the trash icon */
+  margin: 5px 0;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
 }
+
+.trash-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888; /* Monochromatic grey */
+  font-size: 14px;
+}
+
 .sidebar-item.active {
   background-color: #ddf;
   font-weight: bold;

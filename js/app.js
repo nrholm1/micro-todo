@@ -430,47 +430,54 @@ function renderTasks() {
  * Sidebar Rendering and Page Navigation
  *************************************************************/
 function renderSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  if (!sidebar) return;
-  const pages = loadPageList();
-  sidebar.innerHTML = '';
-  pages.forEach(pageName => {
-    const pageDiv = document.createElement('div');
-    pageDiv.className = 'sidebar-item';
-    pageDiv.textContent = pageName;
-    pageDiv.onclick = () => {
-      switchPage(pageName);
-      document.getElementById('current-page-name').textContent = currentPage;
-    };
-    
-    if (pageName !== currentPage) {
-      const trashIcon = document.createElement('span');
-      trashIcon.textContent = ' 🗑';
-      trashIcon.style.cursor = 'pointer';
-      trashIcon.onclick = (e) => {
-        e.stopPropagation();
-        if (confirm("Delete page " + pageName + "?")) {
-          removePage(pageName);
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    const pages = loadPageList();
+    sidebar.innerHTML = '';
+    pages.forEach(pageName => {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'sidebar-item';
+        pageDiv.textContent = pageName;
+        // Set a data attribute to hold the page name
+        pageDiv.setAttribute('data-page', pageName);
+        pageDiv.onclick = () => {
+        switchPage(pageName);
+        document.getElementById('current-page-name').textContent = currentPage;
+        };
+
+        // If not the current page, add a trash icon
+        if (pageName !== currentPage) {
+        const trashIcon = document.createElement('span');
+        trashIcon.className = 'trash-icon';
+        trashIcon.textContent = '✖︎';
+        trashIcon.style.cursor = 'pointer';
+        trashIcon.onclick = (e) => {
+            e.stopPropagation();
+            if (confirm("Delete page " + pageName + "?")) {
+            removePage(pageName);
+            }
+        };
+        pageDiv.appendChild(trashIcon);
         }
-      };
-      pageDiv.appendChild(trashIcon);
-    }
-    
-    sidebar.appendChild(pageDiv);
-  });
-  highlightCurrentPageInSidebar();
+        
+        sidebar.appendChild(pageDiv);
+    });
+    highlightCurrentPageInSidebar();
 }
 
+
 function highlightCurrentPageInSidebar() {
-  const sidebarItems = document.querySelectorAll('.sidebar-item');
-  sidebarItems.forEach(item => {
-    if (item.textContent.indexOf(currentPage) !== -1) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
-  });
-}
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+      const page = item.getAttribute('data-page');
+      if (page === currentPage) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+  
 
 function createNewPage() {
   const pageName = prompt("Enter new page name:");
@@ -551,6 +558,13 @@ function handleKeydown(e) {
   if (e.metaKey && e.key.toLowerCase() === 'i') {
     e.preventDefault();
     importTodos();
+    return;
+  }
+  
+  // Handle Cmd+P for new page
+  if (e.metaKey && e.key.toLowerCase() === 'p') {
+    e.preventDefault();
+    createNewPage();
     return;
   }
   
