@@ -126,16 +126,24 @@ function addPage(pageName) {
 }
 
 function removePage(pageName) {
-  if (pageName === currentPage) {
-    alert("You cannot delete the page you’re currently viewing.");
-    return;
+    if (pageName === 'default') {
+      alert("You cannot delete the default page.");
+      return;
+    }
+    let pages = loadPageList();
+    pages = pages.filter(p => p !== pageName);
+    savePageList(pages);
+    localStorage.removeItem(getPageKey(pageName));
+    
+    // If the deleted page was the current page, switch to default.
+    if (pageName === currentPage) {
+      currentPage = 'default';
+      loadTasksForCurrentPage();
+      renderTasks();
+      updateURL();
+    }
+    renderSidebar();
   }
-  let pages = loadPageList();
-  pages = pages.filter(p => p !== pageName);
-  savePageList(pages);
-  localStorage.removeItem(getPageKey(pageName));
-  renderSidebar();
-}
 
 /**
  * Rename a page.
@@ -485,50 +493,52 @@ function renderTasks() {
  * Sidebar Rendering and Page Navigation
  *************************************************************/
 function renderSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  if (!sidebar) return;
-  const pages = loadPageList();
-  sidebar.innerHTML = '';
-  pages.forEach(pageName => {
-    const pageDiv = document.createElement('div');
-    pageDiv.className = 'sidebar-item';
-    pageDiv.textContent = pageName;
-    pageDiv.setAttribute('data-page', pageName);
-    pageDiv.onclick = () => {
-      switchPage(pageName);
-      const currentNameEl = document.getElementById('current-page-name');
-      if (currentNameEl) {
-        currentNameEl.textContent = currentPage;
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    const pages = loadPageList();
+    sidebar.innerHTML = '';
+    pages.forEach(pageName => {
+      const pageDiv = document.createElement('div');
+      pageDiv.className = 'sidebar-item';
+      pageDiv.textContent = pageName;
+      pageDiv.setAttribute('data-page', pageName);
+      pageDiv.onclick = () => {
+        switchPage(pageName);
+        const currentNameEl = document.getElementById('current-page-name');
+        if (currentNameEl) {
+          currentNameEl.textContent = currentPage;
+        }
+      };
+      // Allow renaming via double-click if not default.
+      if (pageName !== 'default') {
+        pageDiv.ondblclick = () => {
+          const newName = prompt("Enter new name for page:", pageName);
+          if (newName && newName !== pageName) {
+            renamePage(pageName, newName);
+          }
+        };
       }
-    };
-    // Allow renaming via double-click if not default.
-    if (pageName !== 'default') {
-      pageDiv.ondblclick = () => {
-        const newName = prompt("Enter new name for page:", pageName);
-        if (newName && newName !== pageName) {
-          renamePage(pageName, newName);
-        }
-      };
-    }
-    
-    if (pageName !== currentPage) {
-      const trashIcon = document.createElement('span');
-      trashIcon.className = 'trash-icon';
-      trashIcon.textContent = '🗑';
-      trashIcon.style.cursor = 'pointer';
-      trashIcon.onclick = (e) => {
-        e.stopPropagation();
-        if (confirm("Delete page " + pageName + "?")) {
-          removePage(pageName);
-        }
-      };
-      pageDiv.appendChild(trashIcon);
-    }
-    
-    sidebar.appendChild(pageDiv);
-  });
-  highlightCurrentPageInSidebar();
-}
+      
+      // Always add delete icon for non-default pages.
+      if (pageName !== 'default') {
+        const deleteIcon = document.createElement('span');
+        deleteIcon.className = 'trash-icon';
+        deleteIcon.textContent = '✖︎';  // using the new icon
+        deleteIcon.style.cursor = 'pointer';
+        deleteIcon.onclick = (e) => {
+          e.stopPropagation();
+          if (confirm("Delete page " + pageName + "?")) {
+            removePage(pageName);
+          }
+        };
+        pageDiv.appendChild(deleteIcon);
+      }
+      
+      sidebar.appendChild(pageDiv);
+    });
+    highlightCurrentPageInSidebar();
+  }
+  
 
 function highlightCurrentPageInSidebar() {
   const sidebarItems = document.querySelectorAll('.sidebar-item');
