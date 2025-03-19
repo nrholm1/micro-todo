@@ -306,6 +306,25 @@ function switchPage(pageName) {
   updateURL();
 }
 
+
+function switchToNextPage() {
+    const pages = loadPageList();
+    const index = pages.indexOf(currentPage);
+    if (index < 0) return;
+    const nextIndex = (index + 1) % pages.length;
+    switchPage(pages[nextIndex]);
+  }
+  
+  function switchToPrevPage() {
+    const pages = loadPageList();
+    const index = pages.indexOf(currentPage);
+    if (index < 0) return;
+    // Use modulo arithmetic to wrap around.
+    const prevIndex = (index - 1 + pages.length) % pages.length;
+    switchPage(pages[prevIndex]);
+  }
+  
+
 /*************************************************************
  * getVisibleTasks Function
  *************************************************************/
@@ -439,6 +458,18 @@ function toggleCollapse(id) {
  *************************************************************/
 function renderTaskRow(task, tbody, parentId = '') {
   const tr = document.createElement('tr');
+  // When a row is clicked, update activeIndex and highlight it.
+    tr.addEventListener('click', function (e) {
+        // Avoid interfering with button clicks (collapse, dropdown, etc.)
+        if (e.target.tagName.toLowerCase() === 'button') return;
+        const visible = getVisibleTasks();
+        const index = visible.findIndex(t => t.id === task.id);
+        if (index >= 0) {
+        activeIndex = index + 1; // Use 1-based indexing as before.
+        updateFocus();
+        }
+    });
+  
   tr.draggable = true;
   tr.classList.add('draggable-row');
   tr.setAttribute('data-id', task.id);
@@ -710,7 +741,7 @@ function reorderTasks(draggedId, targetId, parentId) {
 
 document.addEventListener('keydown', handleKeydown);
 function handleKeydown(e) {
-  if (editingTaskId !== null) {
+    if (editingTaskId !== null) {
     if (e.key === 'Enter') {
       saveTaskEdit(editingTaskId);
       e.preventDefault();
@@ -749,6 +780,20 @@ function handleKeydown(e) {
     return;
   }
   
+    // Use cmd+ArrowDown to switch to the next page.
+    if (e.metaKey && e.key === 'ArrowDown') {
+        e.preventDefault();
+        switchToNextPage();
+        return;
+        }
+        
+    // Use cmd+ArrowUp to switch to the previous page.
+    if (e.metaKey && e.key === 'ArrowUp') {
+    e.preventDefault();
+    switchToPrevPage();
+    return;
+    }
+
   switch (e.key) {
     case 'ArrowUp':
       moveActiveUp();
@@ -890,7 +935,11 @@ function updateFocus() {
   const idx = activeIndex - 1;
   if (idx >= 0 && idx < visible.length) {
     const row = document.querySelector(`tr[data-id="${visible[idx].id}"]`);
-    if (row) row.classList.add('highlight');
+    if (row) {
+      row.classList.add('highlight');
+      // Ensure the focused row is scrolled into view smoothly.
+      row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 }
 
