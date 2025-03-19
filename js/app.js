@@ -306,6 +306,25 @@ function switchPage(pageName) {
   updateURL();
 }
 
+
+function switchToNextPage() {
+    const pages = loadPageList();
+    const index = pages.indexOf(currentPage);
+    if (index < 0) return;
+    const nextIndex = (index + 1) % pages.length;
+    switchPage(pages[nextIndex]);
+  }
+  
+  function switchToPrevPage() {
+    const pages = loadPageList();
+    const index = pages.indexOf(currentPage);
+    if (index < 0) return;
+    // Use modulo arithmetic to wrap around.
+    const prevIndex = (index - 1 + pages.length) % pages.length;
+    switchPage(pages[prevIndex]);
+  }
+  
+
 /*************************************************************
  * getVisibleTasks Function
  *************************************************************/
@@ -722,7 +741,7 @@ function reorderTasks(draggedId, targetId, parentId) {
 
 document.addEventListener('keydown', handleKeydown);
 function handleKeydown(e) {
-  if (editingTaskId !== null) {
+    if (editingTaskId !== null) {
     if (e.key === 'Enter') {
       saveTaskEdit(editingTaskId);
       e.preventDefault();
@@ -761,6 +780,20 @@ function handleKeydown(e) {
     return;
   }
   
+    // Use cmd+ArrowDown to switch to the next page.
+    if (e.metaKey && e.key === 'ArrowDown') {
+        e.preventDefault();
+        switchToNextPage();
+        return;
+        }
+        
+    // Use cmd+ArrowUp to switch to the previous page.
+    if (e.metaKey && e.key === 'ArrowUp') {
+    e.preventDefault();
+    switchToPrevPage();
+    return;
+    }
+
   switch (e.key) {
     case 'ArrowUp':
       moveActiveUp();
