@@ -52,6 +52,81 @@ function saveTasksForCurrentPage() {
   localStorage.setItem(getPageKey(currentPage), JSON.stringify(tasks));
 }
 
+
+function exportAllPages() {
+    const pages = loadPageList();
+    const backupData = {
+      pages: pages,
+      data: {}
+    };
+    pages.forEach(page => {
+      // Use the stored string (or default to an empty array string)
+      backupData.data[page] = localStorage.getItem(getPageKey(page)) || "[]";
+    });
+    const backupJSON = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([backupJSON], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "backup.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  
+
+  function importAllPages() {
+  if (confirm("Importing an entire set of pages will overwrite your current state. Please back up your data manually if needed. Do you want to continue?")) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.style.display = 'none';
+    input.addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (!importedData.pages || !importedData.data) {
+            alert("Invalid backup file.");
+            return;
+            }
+            // Overwrite the page list
+            savePageList(importedData.pages);
+            // Overwrite localStorage for each page.
+            importedData.pages.forEach(page => {
+            if (importedData.data.hasOwnProperty(page)) {
+                localStorage.setItem(getPageKey(page), importedData.data[page]);
+            } else {
+                localStorage.setItem(getPageKey(page), "[]");
+            }
+            });
+            // If the current page is no longer available, switch to the first imported page.
+            const pages = loadPageList();
+            if (!pages.includes(currentPage)) {
+            currentPage = pages[0] || 'default';
+            }
+            updateURL();
+            loadTasksForCurrentPage();
+            renderTasks();
+            renderSidebar();
+            alert("Pages imported successfully!");
+        } catch (error) {
+            alert("Failed to import pages: " + error);
+        }
+        };
+        reader.readAsText(file);
+    });
+    document.body.appendChild(input);
+    input.click();
+    setTimeout(() => { document.body.removeChild(input); }, 1000);
+  }
+}
+
+
+
 /*************************************************************
  * Hash-based URL Routing Functions
  *************************************************************/
