@@ -1,32 +1,68 @@
-# 🪼 micro-todo
+# 🪼 tiny-todo
 
-### [Available here!](https://nrholm1.github.io/micro-todo/)
+### [Available here!](https://nrholm1.github.io/tiny-todo/)
 
-A minimal, keyboard-centric todo list manager with a small memory footprint. 
+tiny‑todo is a minimal, keyboard-driven todo list manager that runs entirely in your browser. All data is stored locally.
 
-All tasks are stored locally (no server required), and it’s designed to be navigated and edited primarily via the keyboard.
+## Features
+
+- **Local & Multi-Page Storage:**  
+  Create, rename, delete, and switch between separate pages of todos. Each page is stored in localStorage, and the current page appears in the URL hash.
+
+- **Keyboard-Centric:**  
+  Navigate, add, edit, and delete tasks using the keyboard. Click rows to focus them.
+
+- **Import/Export:**  
+  Export or import the current page’s data as a JSON file.  
+  Advanced: Import/Export your entire page collection (overwrites current data after confirmation).
+
+- **URL Sharing:**  
+  The current page’s hash encodes its name for sharing. Shared URLs load that page.
 
 ## Basic Usage
-- **Add a Main Task**: Press `n` (opens a blank task in Edit mode).
-- **Navigate** tasks using the arrow keys.
-- **Press Enter** on a highlighted task to edit its description/deadline.
-- **Press +** to add a subtask (or a sibling sub-subtask if already at level 2).
-- **Toggle Completion** with `c`.
-- **Delete** with `d` (asks for confirmation).
-- **Undo Last Delete** with `Cmd+Z` (macOS) or `Ctrl+Z` (Windows/Linux).
-- **Exit Edit Mode** with the `Escape` key.
 
-## Keyboard Shortcuts
+- **Add Task:** Press `n` to create a new top-level task.
+- **Edit Task:** Press `Enter` on a highlighted task.
+- **Add Subtask:** Press `+` for a subtask (or a sibling sub‑subtask at level 2).
+- **Toggle Completion:** Press `c`.
+- **Delete Task:** Press `d` (confirmation required).
+- **Undo Delete:** Press `Cmd+Z` (macOS) or `Ctrl+Z` (Windows/Linux).
+- **Cancel Edit:** Press `Escape`.
 
-| Shortcut        | Description                                                 |
-|-----------------|-------------------------------------------------------------|
-| **Arrow Up/Down** | Move the highlight up/down through visible tasks            |
-| **Arrow Left**  | Collapse the highlighted task (if it has subtasks)          |
-| **Arrow Right** | Expand the highlighted task (if it has subtasks)            |
-| **Enter**       | Edit the currently highlighted task                          |
-| **+**           | Add a new subtask or sub-subtask (depending on nesting)      |
-| **c**           | Toggle completion of the highlighted task                   |
-| **d**           | Delete the highlighted task (with confirmation)             |
-| **n**           | Create a new top-level task in Edit mode                    |
-| **Cmd+Z / Ctrl+Z** | Undo the most recent delete                                |
-| **Escape**      | Cancel Edit mode                                            |
+## Page Management
+
+- **Switch Pages:** Use the sidebar or press `Cmd+ArrowUp` / `Cmd+ArrowDown`.
+- **Create/Rename/Delete Pages:**  
+  - **Create:** Triggered via a keyboard shortcut (e.g. `Cmd+P`) or a button.  
+  - **Rename:** Double-click a sidebar page (except "default").  
+  - **Delete:** Click the delete icon (✖︎) on non-default pages.
+
+## Import/Export
+
+- **Current Page:**  
+  - **Export (Cmd+O):** Downloads the current page’s JSON.
+  - **Import (Cmd+I):** Loads JSON into a selected page (new or existing).
+- **Entire Collection:**  
+  Separate functions lets you export all pages as a JSON backup and import them (with a warning that this overwrites current data).
+
+## Shortcuts
+
+| Shortcut               | Action                                         |
+|------------------------|------------------------------------------------|
+| Arrow Up/Down          | Move highlight up/down                         |
+| Arrow Left/Right       | Collapse/expand task (if applicable)           |
+| Enter                  | Edit highlighted task                          |
+| +                      | Add subtask/sub‑subtask                         |
+| c                      | Toggle task completion                         |
+| d                      | Delete highlighted task (with confirmation)    |
+| n                      | Add new top-level task in edit mode            |
+| Cmd+Z / Ctrl+Z         | Undo last delete                               |
+| Escape                 | Cancel edit                                    |
+| Cmd+ArrowUp/ArrowDown  | Switch to previous/next page                   |
+| Cmd+I                  | Import current page data                       |
+| Cmd+O                  | Export current page data                       |
+| Cmd+P                  | Create a new page                              |
+
+## Setup
+
+Place the files on any static server. For local testing, use a simple web server to avoid file:// issues.
