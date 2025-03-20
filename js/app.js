@@ -9,6 +9,29 @@ let lastTasksSnapshot = null;
 let currentPage = 'default';
 
 /*************************************************************
+ * Export and load state
+ *************************************************************/
+
+function exportState() {
+  var output = LZUTF8.compress(JSON.stringify(tasks));
+  alert("Copy this:\n" + output.toBase64());
+}
+
+function loadState() {
+  var input = prompt("Paste your state here:");
+  if (input) {
+    try {
+      const uint8Array = Uint8Array.from(atob(input), c => c.charCodeAt(0));
+      tasks = JSON.parse(LZUTF8.decompress(uint8Array));
+      saveTasksForCurrentPage();
+      renderTasks();
+    } catch (error) {
+      alert("Failed to load state: " + error);
+    }
+  }
+}
+
+/*************************************************************
  * Page Management Helpers
  *************************************************************/
 function getPageKey(pageName) {
