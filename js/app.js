@@ -133,14 +133,14 @@ function exportAllPages() {
 function updateURL() {
     if (currentPage !== 'default') {
       window.location.hash = encodeURIComponent(currentPage);
-      document.title = 'micro-todo - ' + currentPage;
+      document.title = 'tiny-todo - ' + currentPage;
       const currentNameEl = document.getElementById('current-page-name');
       if (currentNameEl) {
         currentNameEl.textContent = currentPage;
       }
     } else {
       window.location.hash = '';
-      document.title = 'micro-todo';
+      document.title = 'tiny-todo';
     }
   }
 
