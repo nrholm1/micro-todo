@@ -526,6 +526,9 @@ function renderTaskRow(task, tbody, parentId = '') {
 
     setTimeout(() => {
       const descField = document.getElementById(`edit-desc-${task.id}`);
+      
+      // expand textarea to fit text, and add eventlistener to reupdate on new inputs.
+      descField.style.height = descField.scrollHeight + 'px';
       descField.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';
@@ -753,7 +756,7 @@ function reorderTasks(draggedId, targetId, parentId) {
 document.addEventListener('keydown', handleKeydown);
 function handleKeydown(e) {
     if (editingTaskId !== null) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       saveTaskEdit(editingTaskId);
       e.preventDefault();
     } else if (e.key === 'Escape') {
@@ -777,7 +780,7 @@ function handleKeydown(e) {
     return;
   }
   
-  // Handle Cmd+P for import
+  // Handle Cmd+p to create a new page
   if (e.metaKey && e.key.toLowerCase() === 'p') {
     e.preventDefault();
     createNewPage();
