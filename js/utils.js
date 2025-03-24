@@ -115,31 +115,44 @@ function getNextMainId() {
   }
   
   function parseInlineFormatting(text) {
-    if (!text) return '';
-    let parsed = text;
-    parsed = parsed.replace(/`([^`]+)`/g, (match, codeText) => {
-      const escapedCode = codeText
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      return `<code>${escapedCode}</code>`;
-    });
-    parsed = parsed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
-      const safeUrl = url.replace(/"/g, "&quot;");
-      const escapedLinkText = linkText
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      return `<a href="${safeUrl}" target="_blank">${escapedLinkText}</a>`;
-    });
-    parsed = parsed.replace(/\*\*([^*]+)\*\*/g, (match, boldText) => {
-      return `<strong>${boldText}</strong>`;
-    });
-    parsed = parsed.replace(/\*([^*]+)\*/g, (match, italicText) => {
-      return `<em>${italicText}</em>`;
-    });
-    return parsed;
-  }
+  if (!text) return '';
+  let parsed = text;
+  
+  // Inline code formatting
+  parsed = parsed.replace(/`([^`]+)`/g, (match, codeText) => {
+    const escapedCode = codeText
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return `<code>${escapedCode}</code>`;
+  });
+  
+  // Link formatting
+  parsed = parsed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+    const safeUrl = url.replace(/"/g, "&quot;");
+    const escapedLinkText = linkText
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return `<a href="${safeUrl}" target="_blank">${escapedLinkText}</a>`;
+  });
+  
+  // Bold formatting
+  parsed = parsed.replace(/\*\*([^*]+)\*\*/g, (match, boldText) => {
+    return `<strong>${boldText}</strong>`;
+  });
+  
+  // Italic formatting
+  parsed = parsed.replace(/\*([^*]+)\*/g, (match, italicText) => {
+    return `<em>${italicText}</em>`;
+  });
+  
+  // Replace empty lines (i.e. two or more consecutive newlines) with a <br/>
+  parsed = parsed.replace(/\n\s*\n/g, '<br/>');
+  
+  return parsed;
+}
+
   
   function formatDate(dateStr) {
     const d = new Date(dateStr);
