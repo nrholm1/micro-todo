@@ -8,6 +8,10 @@ let showCompleted = true;
 let lastTasksSnapshot = null;
 let currentPage = 'default';
 
+let lastDeletedTask = null;
+let lastDeletedTaskIndex = null; // optional, if you want to restore at original index
+let isTaskDeleted = false; // true means the task is currently removed
+
 /*************************************************************
  * Page Management Helpers
  *************************************************************/
@@ -300,6 +304,7 @@ function renamePage(oldPageName, newPageName) {
 
 function switchPage(pageName) {
   currentPage = pageName;
+  activeIndex = 1;
   loadTasksForCurrentPage();
   renderTasks();
   highlightCurrentPageInSidebar();
@@ -423,25 +428,35 @@ function cancelEdit() {
   updateFocus();
 }
 
+// function deleteTask(id) {
+//   lastTasksSnapshot = JSON.parse(JSON.stringify(tasks));
+//   tasks = deleteTaskById(id, tasks);
+//   saveTasksForCurrentPage();
+//   renderTasks();
+//   updateFocus();
+// }
+
 function deleteTask(id) {
-  lastTasksSnapshot = JSON.parse(JSON.stringify(tasks));
+  // Find the task in the tasks array
+  const _task = findTaskById(id, tasks)
+  if (_task === -1) return;
+
+  // Store the deleted task
+  lastDeletedTask = _task;
+  isTaskDeleted = true;
+  
+  // Remove the task
   tasks = deleteTaskById(id, tasks);
+
   saveTasksForCurrentPage();
   renderTasks();
   updateFocus();
 }
 
 function undoDelete() {
-  if (!lastTasksSnapshot) {
-    console.log("No delete to undo.");
-    return;
-  }
-  tasks = lastTasksSnapshot;
-  lastTasksSnapshot = null;
-  saveTasksForCurrentPage();
-  renderTasks();
-  updateFocus();
+  console.log("Undo might come back in proper fashion in a future update!")
 }
+
 
 function toggleComplete(id) {
   toggleCompleteTask(id, tasks);
@@ -508,11 +523,11 @@ function renderTaskRow(task, tbody, parentId = '') {
 
   if (task.id === editingTaskId) {
     const tdDesc = document.createElement('td');
-    tdDesc.innerHTML = `<input type="text" id="edit-desc-${task.id}" class="edit-input" value="${task.description}">`;
+    tdDesc.innerHTML = `<textarea id="edit-desc-${task.id}" class="edit-input-text" style="resize: none;">${task.description}</textarea>`;
     tr.appendChild(tdDesc);
 
     const tdDeadline = document.createElement('td');
-    tdDeadline.innerHTML = `<input type="date" id="edit-deadline-${task.id}" class="edit-input" value="${task.deadline ? formatDateForInput(task.deadline) : ''}">`;
+    tdDeadline.innerHTML = `<input type="date" id="edit-deadline-${task.id}" class="edit-input-date" value="${task.deadline ? formatDateForInput(task.deadline) : ''}">`;
     tr.appendChild(tdDeadline);
 
     const tdActions = document.createElement('td');
@@ -525,6 +540,13 @@ function renderTaskRow(task, tbody, parentId = '') {
 
     setTimeout(() => {
       const descField = document.getElementById(`edit-desc-${task.id}`);
+      
+      // expand textarea to fit text, and add eventlistener to reupdate on new inputs.
+      descField.style.height = descField.scrollHeight + 'px';
+      descField.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+      });
       if (descField) descField.focus();
     }, 0);
   } else {
@@ -748,7 +770,7 @@ function reorderTasks(draggedId, targetId, parentId) {
 document.addEventListener('keydown', handleKeydown);
 function handleKeydown(e) {
     if (editingTaskId !== null) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       saveTaskEdit(editingTaskId);
       e.preventDefault();
     } else if (e.key === 'Escape') {
@@ -772,7 +794,7 @@ function handleKeydown(e) {
     return;
   }
   
-  // Handle Cmd+P for import
+  // Handle Cmd+p to create a new page
   if (e.metaKey && e.key.toLowerCase() === 'p') {
     e.preventDefault();
     createNewPage();

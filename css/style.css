@@ -18,7 +18,7 @@ body {
   left: 0;
   width: 100%;
   background-color: #fff; /* white background for seamless look */
-  /* border-bottom: 1px solid #ccc; */
+  border-bottom: 1px solid #ccc;
   padding: 10px 20px;
   z-index: 1000;
 }
@@ -117,7 +117,7 @@ td:nth-child(1) {
 }
 th:nth-child(2),
 td:nth-child(2) {
-  width: 40px;
+  width: 50px;
 }
 th:nth-child(3),
 td:nth-child(3) {
@@ -185,13 +185,32 @@ td.actions-cell .action-menu button:hover {
 }
 
 /* Edit Mode Input Fields */
-table input.edit-input {
+/* table textarea.edit-input {
+  width: 100%;
+  padding: 2px 4px;
+  font-size: 1em;
+  height: auto;
+  resize: none;
+  box-sizing: border-box;
+} */
+
+table textarea.edit-input-text {
+  width: 100%;
+  padding: 2px 4px;
+  font-size: 1em;
+  height: auto;
+  resize: none;
+  box-sizing: border-box;
+}
+
+table input.edit-input-date {
   width: 90%;
   max-width: 100%;
   padding: 2px 4px;
   font-size: 1em;
   height: auto;
 }
+
 
 /* Completed Task Styling */
 .completed {
