@@ -300,6 +300,7 @@ function renamePage(oldPageName, newPageName) {
 
 function switchPage(pageName) {
   currentPage = pageName;
+  activeIndex = 1;
   loadTasksForCurrentPage();
   renderTasks();
   highlightCurrentPageInSidebar();
