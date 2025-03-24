@@ -8,6 +8,10 @@ let showCompleted = true;
 let lastTasksSnapshot = null;
 let currentPage = 'default';
 
+let lastDeletedTask = null;
+let lastDeletedTaskIndex = null; // optional, if you want to restore at original index
+let isTaskDeleted = false; // true means the task is currently removed
+
 /*************************************************************
  * Page Management Helpers
  *************************************************************/
@@ -424,25 +428,35 @@ function cancelEdit() {
   updateFocus();
 }
 
+// function deleteTask(id) {
+//   lastTasksSnapshot = JSON.parse(JSON.stringify(tasks));
+//   tasks = deleteTaskById(id, tasks);
+//   saveTasksForCurrentPage();
+//   renderTasks();
+//   updateFocus();
+// }
+
 function deleteTask(id) {
-  lastTasksSnapshot = JSON.parse(JSON.stringify(tasks));
+  // Find the task in the tasks array
+  const _task = findTaskById(id, tasks)
+  if (_task === -1) return;
+
+  // Store the deleted task
+  lastDeletedTask = _task;
+  isTaskDeleted = true;
+  
+  // Remove the task
   tasks = deleteTaskById(id, tasks);
+
   saveTasksForCurrentPage();
   renderTasks();
   updateFocus();
 }
 
 function undoDelete() {
-  if (!lastTasksSnapshot) {
-    console.log("No delete to undo.");
-    return;
-  }
-  tasks = lastTasksSnapshot;
-  lastTasksSnapshot = null;
-  saveTasksForCurrentPage();
-  renderTasks();
-  updateFocus();
+  console.log("Undo might come back in proper fashion in a future update!")
 }
+
 
 function toggleComplete(id) {
   toggleCompleteTask(id, tasks);
