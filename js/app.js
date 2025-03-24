@@ -509,11 +509,11 @@ function renderTaskRow(task, tbody, parentId = '') {
 
   if (task.id === editingTaskId) {
     const tdDesc = document.createElement('td');
-    tdDesc.innerHTML = `<input type="text" id="edit-desc-${task.id}" class="edit-input" value="${task.description}">`;
+    tdDesc.innerHTML = `<textarea id="edit-desc-${task.id}" class="edit-input-text" style="resize: none;">${task.description}</textarea>`;
     tr.appendChild(tdDesc);
 
     const tdDeadline = document.createElement('td');
-    tdDeadline.innerHTML = `<input type="date" id="edit-deadline-${task.id}" class="edit-input" value="${task.deadline ? formatDateForInput(task.deadline) : ''}">`;
+    tdDeadline.innerHTML = `<input type="date" id="edit-deadline-${task.id}" class="edit-input-date" value="${task.deadline ? formatDateForInput(task.deadline) : ''}">`;
     tr.appendChild(tdDeadline);
 
     const tdActions = document.createElement('td');
@@ -526,6 +526,10 @@ function renderTaskRow(task, tbody, parentId = '') {
 
     setTimeout(() => {
       const descField = document.getElementById(`edit-desc-${task.id}`);
+      descField.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+      });
       if (descField) descField.focus();
     }, 0);
   } else {
