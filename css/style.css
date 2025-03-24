@@ -38,7 +38,7 @@ body {
 /* Fixed Sidebar */
 #sidebar {
   position: fixed;
-  top: 60px; /* immediately below header */
+  top: 50px; /* immediately below header */
   bottom: 0;
   left: 0;
   width: 200px;
@@ -286,6 +286,10 @@ button {
 mjx-container {
   vertical-align: middle;
 }
+
+/* #header h1 {
+  text-align: center;
+} */
 
 @media (max-width: 1000px) {
   /* Hide the sidebar */
